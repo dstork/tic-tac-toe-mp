@@ -3,9 +3,9 @@ import Board from './Board.js';
 import './css/Game.css';
 
 const GAME_STATE = {
-    NOT_STARTED: 0,
-    STARTED: 1,
-    FINISHED: 2
+	NOT_STARTED: 0,
+	STARTED: 1,
+	FINISHED: 2
 };
 class Game extends React.Component {
 	constructor(props) {

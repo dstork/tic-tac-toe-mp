@@ -2,9 +2,9 @@ import Game from './Game.js';
 
 function App(props) {
   return (
-    <Game
+	<Game
 			iAmPlayer1="true"
-      backend={props.backend}
+	  	backend={props.backend}
 		/>
   );
 }
