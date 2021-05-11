@@ -2,16 +2,39 @@ import React from 'react';
 import Board from './Board.js';
 import './css/Game.css';
 
+const GAME_STATE = {
+    NOT_STARTED: 0,
+    STARTED: 1,
+    FINISHED: 2
+};
 class Game extends React.Component {
 	constructor(props) {
 		super(props);
 
-		// connect to server (and retrieve state accordingly? for late joiners e.g.)
+		this.backend = props.backend;
 
 		this.state = {
 			squares: Array(9).fill(null),
 			player1IsNext: true,								// Player1 is always 'X', 2 is 'O'
-			iAmPlayer1: this.props.iAmPlayer1
+			iAmPlayer1: props.iAmPlayer1,
+			gameState: GAME_STATE.NOT_STARTED
+		};
+	}
+
+	componentDidMount() {
+		const ws = new WebSocket(this.backend);
+
+		ws.onopen = () => {
+			console.log(`connected to ${ws.url}`);
+		};
+
+		ws.onmessage = evt => {
+			const message = JSON.parse(evt.data);
+			this.setState(message);
+		};
+
+		ws.onclose = () => {
+			console.log('disconnected');
 		};
 	}
 
@@ -38,6 +61,7 @@ class Game extends React.Component {
 		}
 
 		let myTurn = this.state.player1IsNext && this.state.iAmPlayer1;
+		myTurn &= this.state.gameState === GAME_STATE.GAME_STATE;
 		return (
 			<div className="game">
 				<div className="header">
