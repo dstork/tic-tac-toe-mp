@@ -1,5 +1,6 @@
 const express = require('express');
 const ws = require('ws');
+const { v4: uuidv4 } = require('uuid');
 
 const Game = require('./game.js');
 
@@ -10,18 +11,14 @@ const g = new Game();
 
 const wsServer = new ws.Server({ port: PORT });
 wsServer.on('connection', (socket, request) => {
-	console.log("incoming connection");
+	const uuid = uuidv4();
+	console.log(`incoming connection: ${uuid}`);
 	// first player or second?
 	let player1;
-	if (g.players.length === 0) {
-		player1 = true;
+	if (g.players.length < 2) {
+		player1 = g.players.length === 0 ? true : !g.players[0].isPlayer1;
 		g.addPlayer({
-			isPlayer1: player1,
-			socket
-		});
-	} else if (g.players.length === 1) {
-		player1 = false;
-		g.addPlayer({
+			id: uuid,
 			isPlayer1: player1,
 			socket
 		});
@@ -37,10 +34,12 @@ wsServer.on('connection', (socket, request) => {
 		let obj = JSON.parse(message);
 		g.move(player1, +obj.square);
 	});
+
+	socket.on('close', (s, request) => {
+		g.removePlayerById(uuid);
+	});
 });
 
 wsServer.on('close', (socket, request) => {
-	g.removePlayer({
-		socket
-	});
+
 });

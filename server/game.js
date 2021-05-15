@@ -32,11 +32,11 @@ class Game {
 		}
 	}
 
-	removePlayer(p) {
-		for (let player in this.players) {
-			if (player.socket === p.socket) {
-				this.players.slice(this.players.indexOf(player), 1);
-				return;
+	removePlayerById(id) {
+		for (let player of this.players) {
+			if (player.id === id) {
+				this.players.splice(this.players.indexOf(player), 1);
+				break;
 			}
 		}
 	}
