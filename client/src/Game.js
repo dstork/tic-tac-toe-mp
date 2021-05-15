@@ -1,5 +1,6 @@
 import React from 'react';
 import Board from './Board.js';
+import { calculateWinner } from './utils/GameUtils.js';
 import './css/Game.css';
 
 const GAME_STATE = {
@@ -19,10 +20,13 @@ class Game extends React.Component {
 			iAmPlayer1: props.iAmPlayer1,
 			gameState: GAME_STATE.NOT_STARTED
 		};
+
+		this.componentCleanup = this.componentCleanup.bind(this);
 	}
 
 	componentDidMount() {
 		const ws = new WebSocket(this.backend);
+		this.ws = ws;
 
 		ws.onopen = () => {
 			console.log(`connected to ${ws.url}`);
@@ -36,6 +40,17 @@ class Game extends React.Component {
 		ws.onclose = () => {
 			console.log('disconnected');
 		};
+
+		window.addEventListener('beforeunload', this.componentCleanup);
+	}
+
+	componentWillUnmount() {
+		this.componentCleanup();
+		window.removeEventListener('beforeunload', this.componentCleanup);
+	}
+
+	componentCleanup() {
+		this.ws.close(3001);
 	}
 
 	handleClick(i) {
@@ -43,25 +58,33 @@ class Game extends React.Component {
 		const squares = this.state.squares.slice();
 		if (!squares[i]) {
 			// update to server
-
-			// for now, mock server response to test CSS
-			squares[i] = this.state.player1IsNext ? 'X' : 'O';
-			this.setState({
-				squares
-			});
+			this.ws.send(JSON.stringify({
+				square: i
+			}));
 		}
 	}
 
 	render() {
 		let text;
-		if (this.state.player1IsNext && this.state.iAmPlayer1) {
+		let winners = [];
+		if (this.state.gameState === GAME_STATE.NOT_STARTED) {
+			text = "Waiting for game to start";
+		} else if (this.state.gameState === GAME_STATE.FINISHED) {
+			const winObj = calculateWinner(this.state.squares);
+			if (winObj.winner /* player1 */ === this.state.iAmPlayer1) {
+				text = "You win!";
+			} else {
+				text = "You lose!";
+			}
+			winners = winObj.squares;
+		} else if (this.state.player1IsNext === this.state.iAmPlayer1) {
 			text = "It's your turn!";
 		} else {
 			text = "Waiting for opponent...";
 		}
 
-		let myTurn = this.state.player1IsNext && this.state.iAmPlayer1;
-		myTurn &= this.state.gameState === GAME_STATE.GAME_STATE;
+		let myTurn = this.state.player1IsNext === this.state.iAmPlayer1;
+		myTurn &= this.state.gameState === GAME_STATE.STARTED;
 		return (
 			<div className="game">
 				<div className="header">
@@ -70,8 +93,8 @@ class Game extends React.Component {
 				<Board
 					squares={this.state.squares}
 					myTurn={myTurn}
-					onClick={myTurn ? this.handleClick.bind(this) : null}
-					winners={[]}	// mocked
+					onClick={myTurn ? this.handleClick.bind(this) : () => { }}
+					winners={winners}	// mocked
 				/>
 			</div>
 		)

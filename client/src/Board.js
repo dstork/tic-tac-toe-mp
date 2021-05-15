@@ -1,10 +1,13 @@
 import './css/Board.css';
 
+import Square from './Square.js';
+
 function Board(props) {
 
 	const renderSquare = i => {
 		return (
 			<Square
+				key={i}
 				value={props.squares[i]}
 				onClick={() => props.onClick(i)}
 				winner={props.winners.includes(i)}
@@ -24,16 +27,6 @@ function Board(props) {
 			{squares}
 		</div>
 	);
-}
-
-function Square(props) {
-	let winner = props.winner;
-	let className = "square" + (winner ? " winner" : "");
-	return (
-		<button className={className} onClick={props.onClick}>
-			{props.value}
-		</button>
-	)
 }
 
 export default Board;

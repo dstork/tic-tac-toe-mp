@@ -1,29 +1,29 @@
 const express = require('express');
 const ws = require('ws');
-// const {v4: uuidv4} = require('uuid');
 
-const game = require('./game.js');
+const Game = require('./game.js');
 
 const PORT = 3333;	  // API port
 const app = express();
 
-const g = game();
+const g = new Game();
 
-const wsServer = new ws.Server({ noServer: true });
+const wsServer = new ws.Server({ port: PORT });
 wsServer.on('connection', (socket, request) => {
+	console.log("incoming connection");
 	// first player or second?
 	let player1;
 	if (g.players.length === 0) {
 		player1 = true;
-		players.push({
+		g.addPlayer({
 			isPlayer1: player1,
-			socket: socket
+			socket
 		});
 	} else if (g.players.length === 1) {
 		player1 = false;
-		players.push({
+		g.addPlayer({
 			isPlayer1: player1,
-			socket: socket,
+			socket
 		});
 	} else {
 		// ignore for now
@@ -31,8 +31,16 @@ wsServer.on('connection', (socket, request) => {
 		return;
 	}
 
+	// 'player1' is closure'd into the function
 	socket.on('message', message => {
+		console.log("incoming message");
 		let obj = JSON.parse(message);
 		g.move(player1, +obj.square);
+	});
+});
+
+wsServer.on('close', (socket, request) => {
+	g.removePlayer({
+		socket
 	});
 });
