@@ -1,7 +1,7 @@
 {
   "name": "tic-tac-toe-mp-server",
   "version": "0.0.1",
-  "description": "socket.io based (?) server for a mp tic-tac-toe game",
+  "description": "websocket based server for a mp tic-tac-toe game",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
     "uuid": "^8.3.2",
     "ws": "^7.4.5"
   }

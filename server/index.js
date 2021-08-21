@@ -1,11 +1,9 @@
-const express = require('express');
 const ws = require('ws');
 const { v4: uuidv4 } = require('uuid');
 
 const Game = require('./game.js');
 
 const PORT = 3333;	  // API port
-const app = express();
 
 const g = new Game();
 
