@@ -2,6 +2,7 @@ const ws = require('ws');
 const { v4: uuidv4 } = require('uuid');
 
 const Game = require('./game.js');
+const GAME_STATE = require("./constants.js").GAME_STATE;
 
 const PORT = 3333;	  // API port
 
@@ -30,7 +31,18 @@ wsServer.on('connection', (socket, request) => {
 	socket.on('message', message => {
 		console.log("incoming message");
 		let obj = JSON.parse(message);
-		g.move(player1, +obj.square);
+		switch(obj.type) {
+			case "REMATCH":
+				if (g.gameState === GAME_STATE.FINISHED) {
+					g.restart();
+				}
+				break;
+			case "MOVE":
+				g.move(player1, +obj.square);
+				break;
+			default:
+				console.error(`Received unexpected message of type ${obj.type}: ${message}`);
+		}
 	});
 
 	socket.on('close', (s, request) => {

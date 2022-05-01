@@ -1,5 +1,6 @@
 import {useEffect, useState, useRef} from 'react';
 import Board from './Board.js';
+import RematchButton from './RematchButton.js';
 import { calculateWinner } from './utils/GameUtils.js';
 import './css/Game.css';
 
@@ -46,6 +47,7 @@ function Game({backend, iiAmPlayer1}) {
 		if (!state.squares[i]) {
 			// update to server
 			ws.current.send(JSON.stringify({
+				type: "MOVE",
 				square: i
 			}));
 		}
@@ -76,6 +78,7 @@ function Game({backend, iiAmPlayer1}) {
 		<div className="game">
 			<div className="header">
 				{text}
+				{ state.gameState === GAME_STATE.FINISHED && <RematchButton ws={ws.current}/>}
 			</div>
 			<Board
 				squares={state.squares}

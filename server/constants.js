@@ -1,0 +1,7 @@
+const GAME_STATE = {
+	NOT_STARTED: 0,
+	STARTED: 1,
+	FINISHED: 2
+};
+
+module.exports.GAME_STATE = GAME_STATE;

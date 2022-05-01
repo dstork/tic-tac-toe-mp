@@ -1,12 +1,9 @@
 const calculateWinner = require('./gameUtils').calculateWinner;
 
-const GAME_STATE = {
-	NOT_STARTED: 0,
-	STARTED: 1,
-	FINISHED: 2
-};
+const GAME_STATE = require("./constants.js").GAME_STATE;
 
 class Game {
+
 	constructor() {
 		this.players = [];
 		this.gameState = GAME_STATE.NOT_STARTED;
@@ -71,6 +68,20 @@ class Game {
 					gameState: this.gameState
 				}));
 			}
+		}
+	}
+
+	restart() {
+		this.squares = Array(9).fill(null);
+		this.gameState = GAME_STATE.STARTED;
+		this.player1IsNext = Math.random() >= 0.5;
+
+		for (let player of this.players) {
+			player.socket.send(JSON.stringify({
+				squares: this.squares,
+				player1IsNext: this.player1IsNext,
+				gameState: this.gameState
+			}));
 		}
 	}
 }
