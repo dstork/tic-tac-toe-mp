@@ -20,6 +20,12 @@ class Game {
 		if (this.players.length === 2) {
 			this.gameState = GAME_STATE.STARTED;
 
+			// in case a window is refreshed when the game has already ended,
+			// we should show the result straight away
+			if (calculateWinner(this.squares)) {
+				this.gameState = GAME_STATE.FINISHED;
+			}
+
 			// emit initial state - client's block event handlers until then
 			for (const player of this.players) {
 				player.socket.send(JSON.stringify({

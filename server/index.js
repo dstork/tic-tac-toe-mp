@@ -35,6 +35,7 @@ wsServer.on('connection', (socket, request) => {
 
 	socket.on('close', (s, request) => {
 		g.removePlayerById(uuid);
+		console.log("disconnected")
 	});
 });
 
