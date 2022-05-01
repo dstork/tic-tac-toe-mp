@@ -2,29 +2,29 @@ import './css/Board.css';
 
 import Square from './Square.js';
 
-function Board(props) {
+function Board({squares, onClick, winners}) {
 
-	const renderSquare = i => {
+	const renderSquare = sq => {
 		return (
 			<Square
-				key={i}
-				value={props.squares[i]}
-				onClick={() => props.onClick(i)}
-				winner={props.winners.includes(i)}
+				key={sq}
+				value={squares[sq]}
+				onClick={() => onClick(sq)}
+				winner={winners.includes(sq)}
 			/>
 		);
 	}
 
 	let i = 0;
-	let squares = [];
+	const squareArray = [];
 	while (i < 9) {
-		squares.push(renderSquare(i));
+		squareArray.push(renderSquare(i));
 		i++;
 	}
 
 	return (
 		<div className="board">
-			{squares}
+			{squareArray}
 		</div>
 	);
 }

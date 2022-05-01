@@ -1,4 +1,4 @@
-import React from 'react';
+import {useEffect, useState, useRef} from 'react';
 import Board from './Board.js';
 import { calculateWinner } from './utils/GameUtils.js';
 import './css/Game.css';
@@ -8,97 +8,83 @@ const GAME_STATE = {
 	STARTED: 1,
 	FINISHED: 2
 };
-class Game extends React.Component {
-	constructor(props) {
-		super(props);
 
-		this.backend = props.backend;
+function Game({backend, iiAmPlayer1}) {
+	const [state, setState] = useState({
+		squares: Array(9).fill(null),
+		player1IsNext: true,
+		iAmPlayer1: iiAmPlayer1,
+		gameState: GAME_STATE.NOT_STARTED
+	});
 
-		this.state = {
-			squares: Array(9).fill(null),
-			player1IsNext: true,								// Player1 is always 'X', 2 is 'O'
-			iAmPlayer1: props.iAmPlayer1,
-			gameState: GAME_STATE.NOT_STARTED
+	const ws = useRef(null);
+
+	useEffect(() => {
+		ws.current = new WebSocket(backend);
+
+		ws.current.onopen = () => {
+			console.log(`connected to ${ws.current.url}`);
 		};
 
-		this.componentCleanup = this.componentCleanup.bind(this);
-	}
-
-	componentDidMount() {
-		const ws = new WebSocket(this.backend);
-		this.ws = ws;
-
-		ws.onopen = () => {
-			console.log(`connected to ${ws.url}`);
-		};
-
-		ws.onmessage = evt => {
+		ws.current.onmessage = evt => {
 			const message = JSON.parse(evt.data);
-			this.setState(message);
+			setState(prevState => {
+				return {...prevState, ...message};
+			});
 		};
 
-		ws.onclose = () => {
+		ws.current.onclose = () => {
 			console.log('disconnected');
 		};
 
-		window.addEventListener('beforeunload', this.componentCleanup);
-	}
+		return (() => ws.current.close(3001));
+	}, [backend]);
 
-	componentWillUnmount() {
-		this.componentCleanup();
-		window.removeEventListener('beforeunload', this.componentCleanup);
-	}
-
-	componentCleanup() {
-		this.ws.close(3001);
-	}
-
-	handleClick(i) {
+	const handleClick = i => {
 		// check if field still empty, then report to server
-		const squares = this.state.squares.slice();
-		if (!squares[i]) {
+		// const squares = squares.slice();
+		if (!state.squares[i]) {
 			// update to server
-			this.ws.send(JSON.stringify({
+			ws.current.send(JSON.stringify({
 				square: i
 			}));
 		}
 	}
 
-	render() {
-		let text;
-		let winners = [];
-		if (this.state.gameState === GAME_STATE.NOT_STARTED) {
-			text = "Waiting for game to start";
-		} else if (this.state.gameState === GAME_STATE.FINISHED) {
-			const winObj = calculateWinner(this.state.squares);
-			if (winObj.winner /* player1 */ === this.state.iAmPlayer1) {
-				text = "You win!";
-			} else {
-				text = "You lose!";
-			}
-			winners = winObj.squares;
-		} else if (this.state.player1IsNext === this.state.iAmPlayer1) {
-			text = "It's your turn!";
+	let text;
+	let winners = [];
+	if (state.gameState === GAME_STATE.NOT_STARTED) {
+		text = "Waiting for game to start";
+	} else if (state.gameState === GAME_STATE.FINISHED) {
+		const winObj = calculateWinner(state.squares);
+		if (winObj.winner /* player1 */ === state.iAmPlayer1) {
+			text = "You win!";
 		} else {
-			text = "Waiting for opponent...";
+			text = "You lose!";
 		}
-
-		let myTurn = this.state.player1IsNext === this.state.iAmPlayer1;
-		myTurn &= this.state.gameState === GAME_STATE.STARTED;
-		return (
-			<div className="game">
-				<div className="header">
-					{text}
-				</div>
-				<Board
-					squares={this.state.squares}
-					myTurn={myTurn}
-					onClick={myTurn ? this.handleClick.bind(this) : () => { }}
-					winners={winners}	// mocked
-				/>
-			</div>
-		)
+		winners = winObj.squares;
+	} else if (state.player1IsNext === state.iAmPlayer1) {
+		text = "It's your turn!";
+	} else {
+		text = "Waiting for opponent...";
 	}
+
+	let myTurn = state.player1IsNext === state.iAmPlayer1;
+	myTurn &= state.gameState === GAME_STATE.STARTED;
+
+	return (
+		<div className="game">
+			<div className="header">
+				{text}
+			</div>
+			<Board
+				squares={state.squares}
+				myTurn={myTurn}
+				onClick={myTurn ? handleClick : () => {}}
+				winners={winners}	// mocked
+			/>
+		</div>
+	)
 }
 
 export default Game;

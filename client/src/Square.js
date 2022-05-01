@@ -1,11 +1,10 @@
 import './css/Square.css';
 
-function Square(props) {
-	let winner = props.winner;
+function Square({winner, onClick, value}) {
 	let className = "square" + (winner ? " winner" : "");
 	return (
-		<button className={className} onClick={props.onClick}>
-			{props.value}
+		<button className={className} onClick={onClick}>
+			{value}
 		</button>
 	)
 }
