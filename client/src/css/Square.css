@@ -1,13 +1,14 @@
 .square {
 	border-width: 1px 1px 0 0;
 	border-style: solid;
-	border-color: black;
+	border-color: var(--text-color);
 	outline: none;
 	font-size: 90px;
 	font-weight: bold;
 	height: 120px;
 	width: 120px;
-	background-color: whitesmoke;
+	background-color: var(--square-color);
+	color: var(--text-color);
 }
 
 .square:nth-of-type(-n+3) {
@@ -19,8 +20,8 @@
 }
 
 .winner {
-	background: #000;
-	color: #fff;
+	background: var(--text-color);
+	color: var(--background);
 }
 
 /* .square:nth-of-type(2n) {
